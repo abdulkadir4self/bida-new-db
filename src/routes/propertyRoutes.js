@@ -12,7 +12,7 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
   // Step 1: Insert data into the property table
   const propertyQuery = `
     INSERT INTO property (
-       scheme_name, property_unique_id, allottee_name, fathers_husbands_name,
+      serial_number, scheme_name, property_unique_id, allottee_name, fathers_husbands_name,
       permanent_address, current_address, mobile_number, property_category, property_number,
       registration_amount, registration_date, allotment_amount, allotment_date, sale_price,
       freehold_amount, lease_rent_amount, park_charge, corner_charge,
@@ -25,7 +25,7 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
     ) VALUES (?,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const propertyValues = [
-    formData["serialNumber"], formData["schemeName"], formData["allotteName"],
+    formData["serialNumber"], formData["schemeName"], formData["propertyUniqueId"], formData["allotteName"],
     formData["fatherHusbandName"], formData["permanentAddress"], formData["currentAddress"],
     formData["mobileNumber"], formData["PropertyCategory"], formData["propertyNumber"],
     formData["registrationAmount"], formData["registrationDate"], formData["allotmentAmount"],
@@ -45,7 +45,7 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
   pool.query(propertyQuery, propertyValues, (err, propertyResult) => {
     if (err) {
       console.error("Error inserting property data:", err);
-      return res.status(500).send("Error inserting property data into the database");
+      return res.status(500).json({ message: "Error inserting property data into the database" , errorObj: err});
     }
 
     const propertyId = propertyResult.insertId; // ID of the inserted property
@@ -116,7 +116,7 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
       })
       .catch((err) => {
         console.error("Error inserting data:", err);
-        res.status(500).send("Error inserting data into the database");
+        res.status(500).json({ message: "Error inserting property data into the database" , errorObj: err});
       });
   });
 });
