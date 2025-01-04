@@ -25,7 +25,7 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
     ) VALUES (?,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const propertyValues = [
-    formData["serialNumber"], formData["schemeName"], formData["propertyUniqueId"], formData["allotteName"],
+    formData["serialNumber"], formData["schemeName"], formData["allotteName"],
     formData["fatherHusbandName"], formData["permanentAddress"], formData["currentAddress"],
     formData["mobileNumber"], formData["PropertyCategory"], formData["propertyNumber"],
     formData["registrationAmount"], formData["registrationDate"], formData["allotmentAmount"],
