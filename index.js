@@ -9,6 +9,8 @@ const cors = require('cors')
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 // property route here
