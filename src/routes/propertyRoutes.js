@@ -12,7 +12,7 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
   // Step 1: Insert data into the property table
   const propertyQuery = `
     INSERT INTO property (
-      serial_number, scheme_name, property_unique_id, allottee_name, fathers_husbands_name,
+       scheme_name, property_unique_id, allottee_name, fathers_husbands_name,
       permanent_address, current_address, mobile_number, property_category, property_number,
       registration_amount, registration_date, allotment_amount, allotment_date, sale_price,
       freehold_amount, lease_rent_amount, park_charge, corner_charge,
