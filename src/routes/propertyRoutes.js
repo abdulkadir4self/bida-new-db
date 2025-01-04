@@ -8,6 +8,7 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
   const paymentHistory = formData.paymentHistory; // Array of payment history
   const serviceChargeHistory = formData.serviceChargeHistory; // Array of service charges
 
+
   // Step 1: Insert data into the property table
   const propertyQuery = `
     INSERT INTO property (
@@ -15,31 +16,30 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
       permanent_address, current_address, mobile_number, property_category, property_number,
       registration_amount, registration_date, allotment_amount, allotment_date, sale_price,
       freehold_amount, lease_rent_amount, park_charge, corner_charge,
-      remaining_sale_price_lump_sum, remaining_sale_price_installments, interest_amount,
+      remaining_sale_price_lump_sum, remaining_sale_price_installments, interest_amount, remaining_installment_date,
       area_square_meter, possession_date, additional_land_amount, restoration_charges,
-      certificate_charges, service_charges_financial_year, service_charges_amount,
-      service_charges_late_fee, service_charges_date, registration_charges, registration_date_2,
+      certificate_charges, registration_charges, registration_date_2,
       transfer_name, transferors_fathers_husbands_name, address, inheritance,
       transfer_fee, documentation_fee, transfer_date, building_plan_approval_date,
-      building_construction, deposit_date, receipt_number, change_fee, advertisement_fee
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      building_construction, deposit_date, change_fee, advertisement_fee
+    ) VALUES (?,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const propertyValues = [
-    formData["serialNumber"], formData["schemeName"], formData["propertyId"], formData["ownerName"],
-    formData["fatherName"], formData["permanentAddress"], formData["currentAddress"],
-    formData["mobileNumber"], formData["category"], formData["propertyNumber"],
+    formData["serialNumber"], formData["schemeName"], formData["propertyUniqueId"], formData["allotteName"],
+    formData["fatherHusbandName"], formData["permanentAddress"], formData["currentAddress"],
+    formData["mobileNumber"], formData["PropertyCategory"], formData["propertyNumber"],
     formData["registrationAmount"], formData["registrationDate"], formData["allotmentAmount"],
     formData["allotmentDate"], formData["salePrice"], formData["freeholdAmount"],
-    formData["leaseRent"], formData["parkCharge"], formData["cornerCharge"],
-    formData["remainingSalePrice"], formData["remainingInstallment"], formData["interestAmount"],
-    formData["area_square_meter"], formData["possession_date"], formData["additional_land_amount"],
-    formData["restoration_charges"], formData["certificate_charges"], formData["service_charges_financial_year"],
-    formData["service_charges_amount"], formData["service_charges_late_fee"], formData["service_charges_date"],
+    formData["leaseRentAmount"], formData["parkCharge"], formData["cornerCharge"],
+    formData["remainingSalePriceLumpSum"], formData["remainingSalePriceInstallment"], formData["interestAmount"], 
+    formData["remainingInstallmentDate"],
+    formData["areaSquareMeter"], formData["possessionDate"], formData["additionalLandAmount"],
+    formData["restorationCharges"], formData["certificateCharges"], 
     formData["registrationCharges"], formData["registrationDate2"], formData["transferName"],
     formData["transferorFatherHusbandName"], formData["transferorAddress"], formData["inheritance"],
     formData["transferCharges"], formData["documentationCharges"], formData["transferDate"],
     formData["buildingPlanApprovalDate"], formData["buildingConstruction"], formData["depositDateReceiptNumber"],
-    formData["receipt_number"], formData["changeCharges"], formData["advertisementFee"]
+     formData["changeFee"], formData["advertisementFee"]
   ];
 
   pool.query(propertyQuery, propertyValues, (err, propertyResult) => {
@@ -120,7 +120,6 @@ router.post('/', generatePropertyUniqueId, (req, res) => {
       });
   });
 });
-
 
 // router.post('/', generatePropertyUniqueId, (req, res) => {
 //   const formData = req.body; // This contains the form data as an object
