@@ -172,8 +172,6 @@ router.get('/', (req, res) => {
   });
 });
 
-
-// edit request
 // edit property table
 router.put('/:id', (req, res) => {
   const propertyId = req.params.id; // ID of the property to update
@@ -225,17 +223,17 @@ router.put('/:id', (req, res) => {
     // Step 2: Update data in the installments table
     const installmentPromises = paymentHistory.map((installment) => {
       const installmentQuery = `
-        UPDATE installments SET
-          installment_payment_amount = ?, installment_interest_amount = ?, delayed_interest_amount = ?, installment_date = ?
-        WHERE id = ? AND property_id = ?`;
+      INSERT INTO installments (
+        property_id, installment_payment_amount, installment_interest_amount, delayed_interest_amount, installment_date
+      ) VALUES (?, ?, ?, ?, ?)`;
 
       const installmentValues = [
+        propertyId,
         installment.installmentAmount,
         installment.installmentInterest,
         installment.delayedInterestAmount,
         installment.installmentDate,
-        installment.id,
-        propertyId
+        // installment.id,
       ];
 
       return new Promise((resolve, reject) => {
@@ -252,18 +250,18 @@ router.put('/:id', (req, res) => {
 
     // Step 3: Update data in the service charges table
     const serviceChargePromises = serviceChargeHistory.map((serviceCharge) => {
-      const serviceChargeQuery = `
-        UPDATE service_charge SET
-          service_charge_financial_year = ?, service_charge_amount = ?, service_charges_late_fee = ?, service_charges_date = ?
-        WHERE id = ? AND property_id = ?`;
+      const serviceChargeQuery =  `
+      INSERT INTO service_charge (
+        property_id, service_charge_financial_year, service_charge_amount, service_charges_late_fee, service_charges_date
+      ) VALUES (?, ?, ?, ?, ?)`;
 
       const serviceChargeValues = [
+        propertyId,
         serviceCharge.financialYear,
         serviceCharge.amount,
         serviceCharge.lateFee,
         serviceCharge.date,
-        serviceCharge.id,
-        propertyId
+        // serviceCharge.id,
       ];
 
       return new Promise((resolve, reject) => {
@@ -294,8 +292,5 @@ router.put('/:id', (req, res) => {
       });
   });
 });
-
-
-
 
 module.exports = router;
