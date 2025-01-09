@@ -172,3 +172,130 @@ router.get('/', (req, res) => {
   });
 });
 
+
+// edit request
+// edit property table
+router.put('/:id', (req, res) => {
+  const propertyId = req.params.id; // ID of the property to update
+  const formData = req.body; // Form data from the frontend
+  const paymentHistory = formData.paymentHistory; // Array of payment history with installment IDs
+  const serviceChargeHistory = formData.serviceChargeHistory; // Array of service charges with IDs
+
+  // first study the code and then edit. i have written the comments for easy understanding - chaudhari abkadar
+  // Step 1: Update data in the property table
+  const propertyQuery = `
+    UPDATE property SET
+      serial_number = ?, scheme_name = ?, allottee_name = ?, fathers_husbands_name = ?,
+      permanent_address = ?, current_address = ?, mobile_number = ?, property_category = ?, property_number = ?,
+      registration_amount = ?, registration_date = ?, allotment_amount = ?, allotment_date = ?, sale_price = ?,
+      freehold_amount = ?, lease_rent_amount = ?, park_charge = ?, corner_charge = ?,
+      remaining_sale_price_lump_sum = ?, remaining_sale_price_installments = ?, interest_amount = ?, remaining_installment_date = ?,
+      area_square_meter = ?, possession_date = ?, additional_land_amount = ?, restoration_charges = ?,
+      certificate_charges = ?, registration_charges = ?, registration_date_2 = ?,
+      transfer_name = ?, transferors_fathers_husbands_name = ?, address = ?, inheritance = ?,
+      transfer_fee = ?, documentation_fee = ?, transfer_date = ?, building_plan_approval_date = ?,
+      building_construction = ?, deposit_date = ?, change_fee = ?, advertisement_fee = ?
+    WHERE id = ?`;
+
+  const propertyValues = [
+    formData["serialNumber"], formData["schemeName"], formData["allotteName"],
+    formData["fatherHusbandName"], formData["permanentAddress"], formData["currentAddress"],
+    formData["mobileNumber"], formData["propertyCategory"], formData["propertyNumber"],
+    formData["registrationAmount"], formData["registrationDate"], formData["allotmentAmount"],
+    formData["allotmentDate"], formData["salePrice"], formData["freeholdAmount"],
+    formData["leaseRentAmount"], formData["parkCharge"], formData["cornerCharge"],
+    formData["remainingSalePriceLumpSum"], formData["remainingSalePriceInstallment"], formData["interestAmount"], 
+    formData["remainingInstallmentDate"],
+    formData["areaSquareMeter"], formData["possessionDate"], formData["additionalLandAmount"],
+    formData["restorationCharges"], formData["certificateCharges"], 
+    formData["registrationCharges"], formData["registrationDate2"], formData["transferName"],
+    formData["transferorFatherHusbandName"], formData["transferorAddress"], formData["inheritance"],
+    formData["transferCharges"], formData["documentationCharges"], formData["transferDate"],
+    formData["buildingPlanApprovalDate"], formData["buildingConstruction"], formData["depositDateReceiptNumber"],
+    formData["changeFee"], formData["advertisementFee"],
+    propertyId
+  ];
+
+  pool.query(propertyQuery, propertyValues, (err, propertyResult) => {
+    if (err) {
+      console.error("Error updating property data:", err);
+      return res.status(500).json({ message: "Error updating property data", errorObj: err });
+    }
+
+    // Step 2: Update data in the installments table
+    const installmentPromises = paymentHistory.map((installment) => {
+      const installmentQuery = `
+        UPDATE installments SET
+          installment_payment_amount = ?, installment_interest_amount = ?, delayed_interest_amount = ?, installment_date = ?
+        WHERE id = ? AND property_id = ?`;
+
+      const installmentValues = [
+        installment.installmentAmount,
+        installment.installmentInterest,
+        installment.delayedInterestAmount,
+        installment.installmentDate,
+        installment.id,
+        propertyId
+      ];
+
+      return new Promise((resolve, reject) => {
+        pool.query(installmentQuery, installmentValues, (err, result) => {
+          if (err) {
+            console.error("Error updating installment data:", err);
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    });
+
+    // Step 3: Update data in the service charges table
+    const serviceChargePromises = serviceChargeHistory.map((serviceCharge) => {
+      const serviceChargeQuery = `
+        UPDATE service_charge SET
+          service_charge_financial_year = ?, service_charge_amount = ?, service_charges_late_fee = ?, service_charges_date = ?
+        WHERE id = ? AND property_id = ?`;
+
+      const serviceChargeValues = [
+        serviceCharge.financialYear,
+        serviceCharge.amount,
+        serviceCharge.lateFee,
+        serviceCharge.date,
+        serviceCharge.id,
+        propertyId
+      ];
+
+      return new Promise((resolve, reject) => {
+        pool.query(serviceChargeQuery, serviceChargeValues, (err, result) => {
+          if (err) {
+            console.error("Error updating service charge data:", err);
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    });
+
+    // Step 4: Combine all promises and send response
+    Promise.all([...installmentPromises, ...serviceChargePromises])
+      .then(() => {
+        res.status(200).json({
+          message: "Data updated successfully",
+          propertyData: formData,
+          paymentHistory,
+          serviceChargeHistory
+        });
+      })
+      .catch((err) => {
+        console.error("Error updating data:", err);
+        res.status(500).json({ message: "Error updating property data", errorObj: err });
+      });
+  });
+});
+
+
+
+
+module.exports = router;
