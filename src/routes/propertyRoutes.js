@@ -192,34 +192,51 @@ router.post(
   }
 );
 
+// get route 
 router.get('/', (req, res) => {
   const query = `
+    WITH aggregated_installments AS (
+      SELECT 
+        property_id,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'installment_date', installment_date,
+            'delayed_interest_amount', delayed_interest_amount,
+            'installment_interest_amount', installment_interest_amount,
+            'installment_payment_amount', installment_payment_amount
+          )
+        ) AS installments
+      FROM 
+        installments
+      GROUP BY 
+        property_id
+    ),
+    aggregated_service_charges AS (
+      SELECT 
+        property_id,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'service_charges_date', service_charges_date,
+            'service_charges_late_fee', service_charges_late_fee,
+            'service_charge_amount', service_charge_amount,
+            'service_charge_financial_year', service_charge_financial_year
+          )
+        ) AS service_charges
+      FROM 
+        service_charge
+      GROUP BY 
+        property_id
+    )
     SELECT 
       p.*,
-      JSON_ARRAYAGG(
-        JSON_OBJECT(
-          'installment_date', i.installment_date,
-          'delayed_interest_amount', i.delayed_interest_amount,
-          'installment_interest_amount', i.installment_interest_amount,
-          'installment_payment_amount', i.installment_payment_amount
-        )
-      ) AS installments,
-      JSON_ARRAYAGG(
-        JSON_OBJECT(
-          'service_charges_date', s.service_charges_date,
-          'service_charges_late_fee', s.service_charges_late_fee,
-          'service_charge_amount', s.service_charge_amount,
-          'service_charge_financial_year', s.service_charge_financial_year
-        )
-      ) AS service_charges
+      COALESCE(ai.installments, '[]') AS installments,
+      COALESCE(asc_data.service_charges, '[]') AS service_charges
     FROM 
       property p
     LEFT JOIN 
-      installments i ON p.id = i.property_id
+      aggregated_installments ai ON p.id = ai.property_id
     LEFT JOIN 
-      service_charge s ON p.id = s.property_id
-    GROUP BY 
-      p.id;
+      aggregated_service_charges asc_data ON p.id = asc_data.property_id;
   `;
 
   pool.query(query, (err, results) => {
@@ -241,6 +258,7 @@ router.get('/', (req, res) => {
     });
   });
 });
+
 
 // edit property table
 router.put('/:id', (req, res) => {
